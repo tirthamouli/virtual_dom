@@ -1,2 +1,3 @@
-# virtual_dom
-A virtual DOM
+# Virtual DOM
+
+My own virtual DOM

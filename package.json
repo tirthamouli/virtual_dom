@@ -1,0 +1,16 @@
+{
+  "name": "virtual_dom",
+  "version": "1.0.0",
+  "description": "A virtual DOM",
+  "main": "index.js",
+  "repository": "https://github.com/Boom0027/virtual_dom.git",
+  "author": "tirthamoulib <btirthamouli@gmail.com>",
+  "license": "MIT",
+  "scripts": {
+    "build": "webpack"
+  },
+  "devDependencies": {
+    "webpack": "^4.41.5",
+    "webpack-cli": "^3.3.10"
+  }
+}
