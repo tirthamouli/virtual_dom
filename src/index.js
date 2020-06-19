@@ -31,7 +31,7 @@
 // );
 
 // window.root = root;
-import Observable from './vd/observable';
+import { Observable } from './vd/observable';
 
 const observable = new Observable({
   /**

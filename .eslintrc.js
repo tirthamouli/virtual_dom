@@ -13,5 +13,6 @@ module.exports = {
   rules: {
     'no-restricted-syntax': 0,
     'no-console': 0,
+    'import/prefer-default-export': 0,
   },
 };
