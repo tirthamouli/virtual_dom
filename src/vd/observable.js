@@ -1,4 +1,10 @@
 /**
+ * OBSEVABLE - CREATE OBSERVABLE DATA
+ * AUTHOR: Tirhamouli
+ */
+import { checkIfOwnProperty, isFunction } from '../helpers/helpers';
+
+/**
  * All dependencies object - Which computed callbacks to call for which data property
  * {
  *   [observable property]: [{
@@ -12,23 +18,6 @@ const allDependencies = {};
  * Current dependencies of the computed props
  */
 let currDependencies = [];
-
-/**
- * Checks if object is a function
- * @param {Object} obj
- */
-function isFunction(obj) {
-  return !!(obj && obj.constructor && obj.call && obj.apply);
-}
-
-/**
- * Check if object has the prop
- * @param {Object} obj
- * @param {String} prop
- */
-function checkIfOwnProperty(obj, prop) {
-  return Object.prototype.hasOwnProperty.call(obj, prop);
-}
 
 /**
  * Setup getters and setters and keys
@@ -57,21 +46,33 @@ function defineData(curKey, parent, observer) {
      * @param {*} value
      */
     set: (value) => {
+      // Step 0: Store the old value
+      const oldValue = this.data[curKey];
+
       // Step i: Set the value
       this.data[curKey] = value;
 
       // Step ii: Call the observer if there is an observer
       if (checkIfOwnProperty(observer, curKey) && isFunction(observer[curKey])) {
-        observer[curKey].call(this, value);
+        observer[curKey].call(this, value, oldValue);
       }
 
       // Step iii: Update all the dependent
       if (checkIfOwnProperty(allDependencies, curKey)) {
         // Step iii.1: Loop through all the callback and call them
         for (let i = 0; i < allDependencies[curKey].length; i += 1) {
-          this.computed[
-            allDependencies[curKey][i].key
-          ] = allDependencies[curKey][i].callback.call(this);
+          // Get the key name and the computed value and old value
+          const keyName = allDependencies[curKey][i].key;
+          const computedValue = allDependencies[curKey][i].callback.call(this);
+          const computedOldValue = this.computed[keyName];
+
+          // Store the computed value
+          this.computed[keyName] = computedValue;
+
+          // Check if the computed property has any observer
+          if (checkIfOwnProperty(observer, keyName) && isFunction(observer[keyName])) {
+            observer[keyName].call(this, computedValue, computedOldValue);
+          }
         }
       }
     },
