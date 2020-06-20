@@ -15,13 +15,20 @@ class Root extends Component {
     };
   }
 
+  clickHandler(fruit) {
+    this.fruits = this.fruits.filter((curFruit) => curFruit !== fruit);
+  }
+
   render() {
     return createElement(
       'ul',
       {
         className: 'container chain',
       },
-      ...this.fruits.map((fruit) => createElement('li', { key: fruit }, fruit)),
+      null, // listeners
+      ...this.fruits.map((fruit) => createElement('li', { key: fruit }, {
+        click: () => { this.clickHandler(fruit); },
+      }, fruit)),
     );
   }
 }

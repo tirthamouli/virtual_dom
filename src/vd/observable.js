@@ -31,12 +31,12 @@ function defineData(curKey, parent, observer) {
      */
     get: () => {
       // Step 1: Check if key is in data
-      if (checkIfOwnProperty(this.data, curKey)) {
+      if (checkIfOwnProperty(this._data, curKey)) {
         // Step i: Add to dependencies
         currDependencies.push(curKey);
 
         // Step ii: Return result
-        return this.data[curKey];
+        return this._data[curKey];
       }
       // Throw error when key is undefined
       throw new Error('KEY_IS_UNDEFINED');
@@ -47,10 +47,10 @@ function defineData(curKey, parent, observer) {
      */
     set: (value) => {
       // Step 0: Store the old value
-      const oldValue = this.data[curKey];
+      const oldValue = this._data[curKey];
 
       // Step i: Set the value
-      this.data[curKey] = value;
+      this._data[curKey] = value;
 
       // Step ii: Call the observer if there is an observer
       if (checkIfOwnProperty(observer, curKey) && isFunction(observer[curKey])) {
@@ -64,10 +64,10 @@ function defineData(curKey, parent, observer) {
           // Get the key name and the computed value and old value
           const keyName = allDependencies[curKey][i].key;
           const computedValue = allDependencies[curKey][i].callback.call(this);
-          const computedOldValue = this.computed[keyName];
+          const computedOldValue = this._computed[keyName];
 
           // Store the computed value
-          this.computed[keyName] = computedValue;
+          this._computed[keyName] = computedValue;
 
           // Check if the computed property has any observer
           if (checkIfOwnProperty(observer, keyName) && isFunction(observer[keyName])) {
@@ -79,7 +79,7 @@ function defineData(curKey, parent, observer) {
   });
 
   // Step 2: Set the default value
-  this.data[curKey] = parent[curKey];
+  this._data[curKey] = parent[curKey];
 }
 
 /**
@@ -92,8 +92,8 @@ function getSetComputed(key) {
      * Getter for the key
      */
     get: () => {
-      if (checkIfOwnProperty(this.computed, key)) {
-        return this.computed[key];
+      if (checkIfOwnProperty(this._computed, key)) {
+        return this._computed[key];
       }
       throw new Error('KEY_DELETED');
     },
@@ -117,7 +117,7 @@ function defineComputed(key, cb) {
   currDependencies = [];
 
   // Step 2: Run the call back and set the initial value and set getter and setter
-  this.computed[key] = cb.call(this);
+  this._computed[key] = cb.call(this);
   getSetComputed.call(this, key);
 
   // Step 3: Check which dependencies were required
@@ -149,44 +149,38 @@ function defineComputed(key, cb) {
  * @param {Object} data
  * @param {Object} watch
  */
-export class Observable {
-  /**
-   * Constructor
-   * @param {Object} obj
-   */
-  constructor(obj) {
-    // Step 1: Set an empty data object and computed
-    this.data = {};
-    this.computed = {};
+export function Observable(obj) {
+  // Step 1: Set an empty data object and computed
+  this._data = {};
+  this._computed = {};
 
-    // Step 2: Setting data properties
-    if (checkIfOwnProperty(obj, 'data')) {
-      // Step 2.1: Data
-      const { data } = obj;
+  // Step 2: Setting data properties
+  if (checkIfOwnProperty(obj, 'data')) {
+    // Step 2.1: Data
+    const { data } = obj;
 
-      // Step 2.2: Watch
-      const watch = checkIfOwnProperty(obj, 'watch') ? obj.watch : {};
+    // Step 2.2: Watch
+    const watch = checkIfOwnProperty(obj, 'watch') ? obj.watch : {};
 
-      // Step 2.3: Loop through all the keys and set the getters and setters
-      for (const key of Object.keys(data)) {
-        // Step 2.3.1.1: Define getters and setters
-        defineData.call(this, key, data, watch);
-      }
+    // Step 2.3: Loop through all the keys and set the getters and setters
+    for (const key of Object.keys(data)) {
+      // Step 2.3.1.1: Define getters and setters
+      defineData.call(this, key, data, watch);
     }
+  }
 
-    // Step 3: Setting up computed properties and dependencies
-    if (checkIfOwnProperty(obj, 'computed')) {
-      // Step 3.1: Computed
-      const { computed } = obj;
+  // Step 3: Setting up computed properties and dependencies
+  if (checkIfOwnProperty(obj, 'computed')) {
+    // Step 3.1: Computed
+    const { computed } = obj;
 
-      // Step 3.2: loop through all the keys and define the computed
-      for (const key of Object.keys(computed)) {
-        // Step 3.2.1: Check if key is actually a key and not in __proto__,
-        // it is a function and data property of the same name doesn't exists
-        if (isFunction(computed[key]) && !checkIfOwnProperty(this, key)) {
-          // Step 3.2.1.1: Define computed
-          defineComputed.call(this, key, computed[key]);
-        }
+    // Step 3.2: loop through all the keys and define the computed
+    for (const key of Object.keys(computed)) {
+      // Step 3.2.1: Check if key is actually a key and not in __proto__,
+      // it is a function and data property of the same name doesn't exists
+      if (isFunction(computed[key]) && !checkIfOwnProperty(this, key)) {
+        // Step 3.2.1.1: Define computed
+        defineComputed.call(this, key, computed[key]);
       }
     }
   }

@@ -1,5 +1,6 @@
 import { Observable } from './observable';
 import { isFunction } from '../helpers/helpers';
+import { update } from './realDOM';
 
 export class Component {
   /**
@@ -23,17 +24,22 @@ export class Component {
     // Step 3: Create watch
     const watch = {
       render(newDOM, oldDOM) {
-        console.log('new dom', newDOM);
-        console.log('old dom', oldDOM);
+        update(oldDOM, newDOM);
+        this.node = newDOM;
       },
     };
 
-    // Step 2: Create the observable
-    const observable = new Observable({ data, computed, watch });
+    // Step 4: Create the observable
+    Observable.call(this, { data, computed, watch });
 
-    // Step 3: Return the rendered object
-    this.node = observable.render;
-    return this.node;
+    // Step 5: Return the rendered object
+    this._node = this.render;
+
+    // Step 6: Add keyed attributes
+    console.log(this);
+
+    // Step 7: Return the node
+    return this._node;
   }
 
   /**
