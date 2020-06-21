@@ -5,21 +5,6 @@
 import { checkIfOwnProperty, isFunction } from '../helpers/helpers';
 
 /**
- * All dependencies object - Which computed callbacks to call for which data property
- * {
- *   [observable property]: [{
- *      key: [observer property or computed property], callback: [function to generate the computed]
- *   }]
- * }
- */
-const allDependencies = {};
-
-/**
- * Current dependencies of the computed props
- */
-let currDependencies = [];
-
-/**
  * Setup getters and setters and keys
  * @param {String} curKey
  */
@@ -33,7 +18,7 @@ function defineData(curKey, parent, observer) {
       // Step 1: Check if key is in data
       if (checkIfOwnProperty(this._data, curKey)) {
         // Step i: Add to dependencies
-        currDependencies.push(curKey);
+        this._currDependencies.push(curKey);
 
         // Step ii: Return result
         return this._data[curKey];
@@ -58,12 +43,12 @@ function defineData(curKey, parent, observer) {
       }
 
       // Step iii: Update all the dependent
-      if (checkIfOwnProperty(allDependencies, curKey)) {
+      if (checkIfOwnProperty(this._allDependencies, curKey)) {
         // Step iii.1: Loop through all the callback and call them
-        for (let i = 0; i < allDependencies[curKey].length; i += 1) {
+        for (let i = 0; i < this._allDependencies[curKey].length; i += 1) {
           // Get the key name and the computed value and old value
-          const keyName = allDependencies[curKey][i].key;
-          const computedValue = allDependencies[curKey][i].callback.call(this);
+          const keyName = this._allDependencies[curKey][i].key;
+          const computedValue = this._allDependencies[curKey][i].callback.call(this);
           const computedOldValue = this._computed[keyName];
 
           // Store the computed value
@@ -114,26 +99,26 @@ function getSetComputed(key) {
  */
 function defineComputed(key, cb) {
   // Step 1: Empty the current dependencies
-  currDependencies = [];
+  this._currDependencies = [];
 
   // Step 2: Run the call back and set the initial value and set getter and setter
   this._computed[key] = cb.call(this);
   getSetComputed.call(this, key);
 
   // Step 3: Check which dependencies were required
-  for (let i = 0; i < currDependencies.length; i += 1) {
+  for (let i = 0; i < this._currDependencies.length; i += 1) {
     // Step 3.1 Get the current key
-    const curKey = currDependencies[i];
+    const curKey = this._currDependencies[i];
 
     // Step 3.2: Check if current dependency already has a callback array.
     // If already there push the new callback or else create a new callback array
-    if (checkIfOwnProperty(allDependencies, curKey)) {
-      allDependencies[curKey].push({
+    if (checkIfOwnProperty(this._allDependencies, curKey)) {
+      this._allDependencies[curKey].push({
         key,
         callback: cb,
       });
     } else {
-      allDependencies[curKey] = [{
+      this._allDependencies[curKey] = [{
         key,
         callback: cb,
       }];
@@ -141,7 +126,7 @@ function defineComputed(key, cb) {
   }
 
   // Step 4: Clear current dependencies
-  currDependencies = [];
+  this._currDependencies = [];
 }
 
 /**
@@ -153,6 +138,22 @@ export function Observable(obj) {
   // Step 1: Set an empty data object and computed
   this._data = {};
   this._computed = {};
+
+  /**
+   * All dependencies object - Which computed callbacks to call for which data property
+   * {
+   *   [observable property]: [{
+   *      key: [observer property or computed property],
+   *      callback: [function to generate the computed]
+   *   }]
+   * }
+   */
+  this._allDependencies = {};
+
+  /**
+   * Current dependencies of the computed props
+   */
+  this._currDependencies = [];
 
   // Step 2: Setting data properties
   if (checkIfOwnProperty(obj, 'data')) {

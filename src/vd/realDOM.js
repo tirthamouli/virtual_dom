@@ -50,11 +50,7 @@ function removeAttributes(attributes, $el) {
  */
 function addAttributes(attributes, $el) {
   Object.keys(attributes).forEach((key) => {
-    if (key === 'className') {
-      $el.class = attributes[key];
-    } else if (key !== 'key') {
-      $el[key] = attributes[key];
-    }
+    $el[key] = attributes[key];
   });
 }
 
@@ -86,11 +82,7 @@ function updateAttributes({ attributes: oldAttr, $el }, { attributes: newAttr })
       }
     } else if (newAttrCopy[key] !== oldAttr[key]
       || $el.getAttribute(key === 'className' ? 'class' : key) !== newAttrCopy[key]) { // Step 3.2 Key present but requires updating
-      if (key === 'className') {
-        $el.setAttribute('class', newAttrCopy[key]);
-      } else if (key !== 'key') {
-        $el[key] = newAttrCopy[key];
-      }
+      $el[key] = newAttrCopy[key];
       delete newAttrCopy[key];
     } else if (newAttrCopy[key] === oldAttr[key]) {
       delete newAttrCopy[key];

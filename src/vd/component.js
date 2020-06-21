@@ -1,5 +1,5 @@
 import { Observable } from './observable';
-import { isFunction } from '../helpers/helpers';
+import { isFunction, checkIfOwnProperty } from '../helpers/helpers';
 import { update } from './realDOM';
 
 export class Component {
@@ -7,13 +7,11 @@ export class Component {
    * Setting the props
    * @param {Object} props
    */
-  constructor(props) {
+  constructor(props = {}) {
     // Step 1: Create the data field
-    let data = null;
+    let data = {};
     if (this.data && isFunction(this.data)) {
-      data = { ...this.data(), ...props };
-    } else {
-      data = { ...props };
+      data = { ...this.data() };
     }
 
     // Step 2: Create computed
@@ -38,13 +36,19 @@ export class Component {
       },
     };
 
-    // Step 4: Create the observable
+    // Step 4: Add the props
+    this.props = props;
+
+    // Step 5: Create the observable
     Observable.call(this, { data, computed, watch });
 
-    // Step 5: Return the rendered object
+    // Step 6: Return the rendered object
     this._node = this.render;
+    if (this.props && checkIfOwnProperty(this.props, 'key')) {
+      this._node.key = this.props.key;
+    }
 
-    // Step 6: Return the node
+    // Step 7: Return the node
     return this._node;
   }
 
