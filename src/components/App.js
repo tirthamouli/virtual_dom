@@ -1,4 +1,5 @@
 import ListItem from './ListItem';
+import Input from './Input';
 import { createElement } from '../vd/virtualDOM';
 import { Component } from '../vd/component';
 
@@ -30,32 +31,28 @@ export default class Root extends Component {
   }
 
   render() {
-    return createElement(
-      'ul',
-      {
-        className: 'container chain',
-      },
-      null, // listeners
-      createElement('input', { type: 'text', value: this.addInput }, {
-        input: (event) => this.changeAddInputHandler(event.target.value),
-        keydown: (e) => {
-          const code = (e.keyCode ? e.keyCode : e.which);
-          if (code === 13) {
-            this.addInputToListHander();
-          }
-        },
+    return createElement('div', { className: 'container' }, null,
+      createElement(Input, {
+        addInput: this.addInput,
+        changeAddInputHandler: this.changeAddInputHandler.bind(this),
+        addInputToListHander: this.addInputToListHander.bind(this),
       }),
-      createElement('button', { type: 'button' }, { click: this.addInputToListHander.bind(this) }, 'Add to list'),
-      ...this.fruits.map(
-        (fruit) => createElement(ListItem,
-          {
-            key: fruit,
-            fruit,
-            removeFruit: () => {
-              this.clickHandler(fruit);
-            },
-          }),
-      ),
-    );
+      createElement(
+        'ul',
+        {
+          id: 'fruit-container',
+        },
+        null, // listeners
+        ...this.fruits.map(
+          (fruit) => createElement(ListItem,
+            {
+              key: fruit,
+              fruit,
+              removeFruit: () => {
+                this.clickHandler(fruit);
+              },
+            }),
+        ),
+      ));
   }
 }

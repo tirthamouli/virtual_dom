@@ -1,7 +1,7 @@
 import { Component } from '../vd/component';
 import { createElement } from '../vd/virtualDOM';
 
-export default class InputElement extends Component {
+export default class ListItem extends Component {
   render() {
     // Step 1: Get the current fruit
     const { fruit, removeFruit } = this.props;
