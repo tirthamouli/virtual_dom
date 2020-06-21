@@ -22,9 +22,18 @@ export class Component {
     };
 
     // Step 3: Create watch
+    let newDOMForUpdate = null;
+    let updateQueued = false;
     const watch = {
       render(newDOM, oldDOM) {
-        update(oldDOM, newDOM);
+        newDOMForUpdate = newDOM;
+        if (!updateQueued) {
+          updateQueued = true;
+          setTimeout(() => {
+            update(oldDOM, newDOMForUpdate);
+            updateQueued = false;
+          });
+        }
         this.node = newDOM;
       },
     };

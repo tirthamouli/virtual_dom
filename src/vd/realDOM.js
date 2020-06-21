@@ -84,11 +84,12 @@ function updateAttributes({ attributes: oldAttr, $el }, { attributes: newAttr })
       } else if (key !== 'key') {
         $el.removeAttribute(key);
       }
-    } else if (newAttrCopy[key] !== oldAttr[key]) { // Step 3.2 Key present but requires updating
+    } else if (newAttrCopy[key] !== oldAttr[key]
+      || $el.getAttribute(key === 'className' ? 'class' : key) !== newAttrCopy[key]) { // Step 3.2 Key present but requires updating
       if (key === 'className') {
         $el.setAttribute('class', newAttrCopy[key]);
       } else if (key !== 'key') {
-        $el.removeAttribute(key, newAttrCopy[key]);
+        $el[key] = newAttrCopy[key];
       }
       delete newAttrCopy[key];
     } else if (newAttrCopy[key] === oldAttr[key]) {
@@ -176,7 +177,6 @@ function updateRemainingChildren(oldChildren, oldChildrenKey, newChildren, $el) 
     } else if (checkIfOwnProperty(curNewChild, 'key') && checkIfOwnProperty(oldChildrenKey, curNewChild.key)) { // Step 3: Check if keyed
       const $curChild = oldChildrenKey[curNewChild.key].element.$el;
       update(oldChildrenKey[curNewChild.key].element, curNewChild);
-      console.log(oldChildrenKey[curNewChild.key], curNewChild, i);
       insertAtIndex($curChild, $el, i);
     } else if (checkIfOwnProperty(curNewChild, 'key') && !checkIfOwnProperty(oldChildrenKey, curNewChild.key)) {
       const $newChild = createElement(curNewChild);
