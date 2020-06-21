@@ -58,7 +58,8 @@ class VirtualNode {
  */
 export function createElement(type, attributes, listeners, ...children) {
   if (typeof type === 'string') {
-    return new VirtualNode(type, attributes, listeners, children);
+    return new VirtualNode(type,
+      attributes === null ? {} : attributes, listeners, children);
   }
   return new type(attributes);
 }

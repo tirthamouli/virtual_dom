@@ -7,13 +7,13 @@ export default class Root extends Component {
   data() {
     return {
       fruits: [
-        'apple',
-        'mango',
-        'banana',
-        'grapes',
-        'pear',
+        { id: 1, name: 'apple' },
+        { id: 2, name: 'mango' },
+        { id: 3, name: 'banana' },
+        { id: 4, name: 'grapes' },
+        { id: 5, name: 'pear' },
       ],
-      addInput: 'some value',
+      addInput: '',
     };
   }
 
@@ -26,12 +26,15 @@ export default class Root extends Component {
   }
 
   addInputToListHander() {
-    this.fruits = [...this.fruits, this.addInput];
+    const nextID = this.fruits.length === 0 ? 1 : this.fruits[this.fruits.length - 1].id + 1;
+    this.fruits = [...this.fruits, { id: nextID, name: this.addInput }];
     this.addInput = '';
   }
 
   render() {
     return createElement('div', { className: 'container' }, null,
+      createElement('h1', null, null, 'Fruits'),
+      createElement('p', null, null, 'Fruits that you will eat...'),
       createElement(Input, {
         addInput: this.addInput,
         changeAddInputHandler: this.changeAddInputHandler.bind(this),
@@ -46,8 +49,8 @@ export default class Root extends Component {
         ...this.fruits.map(
           (fruit) => createElement(ListItem,
             {
-              key: fruit,
-              fruit,
+              key: fruit.id,
+              fruit: fruit.name,
               removeFruit: () => {
                 this.clickHandler(fruit);
               },

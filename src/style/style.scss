@@ -1,0 +1,59 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: Raleway;
+}
+
+body {
+  background-color: #344a72;
+}
+
+.container {
+  max-width: 700px;
+  margin: 5rem auto;
+  background-color: #fff;
+  padding: 30px;
+}
+
+
+.input-container {
+  margin-top: 1rem;
+  display: flex;
+}
+
+.input-container input {
+  flex-grow: 1;
+  padding: 0.5rem;
+  font-size: 18px;
+  border: 1px solid #333;
+  border-radius: 10px 0 0 10px;
+  outline: none;
+}
+
+.input-container button {
+  border: none;
+  outline: none;
+  border-radius: 0 10px 10px 0;
+  background-color: #49c1a2;
+  padding: 0.5rem 2rem;
+  cursor: pointer;
+  color: white
+}
+
+.input-container button:hover {
+  background-color: #37a08e;
+}
+
+#fruit-container {
+  margin-top: 1.5rem;
+  border-top: 1px solid #999;
+  padding: 1rem;
+}
+
+li.fruit-name {
+  padding: 1rem;
+  list-style: none;
+  cursor: pointer;
+  border-bottom: 1px solid #eee;
+}
