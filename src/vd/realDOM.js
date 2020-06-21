@@ -11,7 +11,11 @@ import { isFunction, checkIfOwnProperty } from '../helpers/helpers';
  */
 function checkElementHasChanged(oldDOM, newDOM) {
   // Step 1: Check if either changed from or to string
-  if (typeof oldDOM === 'string' || typeof newDOM === 'string') {
+  if (oldDOM.type === 'text' || newDOM.text === 'text') {
+    // Check if text value is the same
+    if (oldDOM.type === 'text' && newDOM.text === 'text' && oldDOM.value === newDOM.value) {
+      return false;
+    }
     return true;
   }
 
@@ -60,7 +64,7 @@ function addAttributes(attributes, $el) {
  * @param {*} newDOM
  */
 function updateAttributes({ attributes: oldAttr, $el }, { attributes: newAttr }) {
-  // Step 1: Check if both all attributes needs to be removed
+  // Step 1: Check if all attributes needs to be removed
   if (oldAttr && !newAttr) {
     return removeAttributes(oldAttr, $el);
   }
@@ -97,11 +101,130 @@ function updateAttributes({ attributes: oldAttr, $el }, { attributes: newAttr })
 }
 
 /**
+ * Add all the children
+ * @param {*} children
+ * @param {*} $el
+ */
+function addAllChildren(children, $el) {
+  // Step 1: Add children
+  children.forEach((child) => {
+    // Add the parent
+    if (typeof child === 'object') {
+      child.$parent = $el;
+    }
+
+    // Create the child
+    $el.appendChild(createElement(child));
+  });
+}
+
+/**
+ * Remove the un-necessary keyed elements
+ * @param {*} oldChildren
+ * @param {*} newChildren
+ * @param {*} $el
+ */
+function removeKeyedChildren(oldChildrenKey, oldChildren, newChildrenKey, $el) {
+  // Step 1: Calculate
+  let deleted = 0;
+  Object.keys(oldChildrenKey).forEach((key) => {
+    if (!checkIfOwnProperty(newChildrenKey, key)) {
+      const $child = oldChildrenKey[key].element.$el;
+      $el.removeChild($child);
+    }
+    oldChildren.splice(oldChildrenKey[key].index - deleted);
+    deleted += 1;
+  });
+}
+
+/**
+ * Insert at certain index
+ * @param {*} $el
+ * @param {*} $parent
+ * @param {*} index
+ */
+function insertAtIndex($el, $parent, index) {
+  if (index >= $parent.children.length) {
+    $parent.appendChild($el);
+  } else if ($parent.children[index] !== $el) {
+    $parent.insertBefore($el, $parent.children[index]);
+  }
+}
+
+/**
+ * Update the remaining children
+ * @param {*} oldChildren
+ * @param {*} oldChildrenKey
+ * @param {*} newChildren
+ * @param {*} newChildrenKey
+ * @param {*} $el
+ */
+function updateRemainingChildren(oldChildren, oldChildrenKey, newChildren, $el) {
+  let i = 0;
+  let j = 0;
+
+  // Update elements
+  while (i < newChildren.length) {
+    // Step 1: Get the cur new child
+    const curNewChild = newChildren[i];
+    const curOldChild = j >= oldChildren.length ? null : oldChildren[j];
+
+    // Step 2: Update the child
+    if (curNewChild.type === 'text' && curOldChild.type === 'text') {
+      update(curOldChild, curNewChild);
+      j += 1;
+    } else if (checkIfOwnProperty(curNewChild, 'key') && checkIfOwnProperty(oldChildrenKey, curNewChild.key)) { // Step 3: Check if keyed
+      const $curChild = oldChildrenKey[curNewChild.key].element.$el;
+      update(oldChildrenKey[curNewChild.key].element, curNewChild);
+      console.log(oldChildrenKey[curNewChild.key], curNewChild, i);
+      insertAtIndex($curChild, $el, i);
+    } else if (checkIfOwnProperty(curNewChild, 'key') && !checkIfOwnProperty(oldChildrenKey, curNewChild.key)) {
+      const $newChild = createElement(curNewChild);
+      insertAtIndex($newChild, $el, i);
+    } else if (curNewChild && curOldChild) { // Step 4: Comparing remaining elements
+      update(curOldChild, curNewChild);
+      insertAtIndex(curNewChild.$el, $el, i);
+      j += 1;
+    } else if (!curOldChild) {
+      const $newChild = createElement(curNewChild);
+      insertAtIndex($newChild, $el, i);
+    }
+
+    // Step 3: Update i
+    i += 1;
+  }
+
+  // Remove remaining elements
+  while (j < oldChildren.length) {
+    $el.removeChild(oldChildren[i].$el);
+  }
+}
+
+/**
  * Update the children
  * @param {*} oldDOM
  * @param {*} newDOM
  */
-function updateChildren(oldDOM, newDOM) {}
+function updateChildren({ children: oldChildren, childrenKey: oldChildrenKey, $el },
+  { children: newChildren, childrenKey: newChildrenKey }) {
+  // Step 1: Check if all children needs to be removed
+  if (oldChildren.length > 0 && newChildren.length === 0) {
+    // Step 1.1: Empty the inner html
+    $el.innerHTML = '';
+    return null;
+  }
+
+  // Step 2: Check if all the children needs to be added
+  if (oldChildren.length === 0 && newChildren.length > 0) {
+    return addAllChildren(newChildren, $el);
+  }
+
+  // Step 3: Remove the keyed elements which are not required
+  removeKeyedChildren(oldChildrenKey, oldChildren, newChildrenKey, $el);
+
+  // Step 4: Update the remaining DOM elements
+  return updateRemainingChildren(oldChildren, oldChildrenKey, newChildren, $el);
+}
 
 /**
  * Create a real DOM node from the virtual node
@@ -114,8 +237,10 @@ export function createElement(node) {
   }
 
   // Step 1: Check if we are supposed to create a
-  if (typeof node === 'string') {
-    return document.createTextNode(node);
+  if (node.type === 'text') {
+    const $curChild = document.createTextNode(node.value);
+    node.$el = $curChild;
+    return $curChild;
   }
 
   // Step 2: Default return
@@ -152,15 +277,7 @@ export function createElement(node) {
   }
 
   // Step 7: Create the children
-  children.forEach((child) => {
-    // Add the parent
-    if (typeof child === 'object') {
-      child.$parent = $el;
-    }
-
-    // Create the child
-    $el.appendChild(createElement(child));
-  });
+  addAllChildren(children, $el);
 
   // Step 8: Attach the el to the object
   node.$el = $el;
@@ -188,17 +305,22 @@ export function render(root, node) {
  * @param {Object} newDOM
  */
 export function update(oldDOM, newDOM) {
-  // Step 1: Check if the element itself has changed
+  // Step 1: Update the el
+  newDOM.$el = oldDOM.$el;
+
+  // Step 2: Check if the element itself has changed
   if (checkElementHasChanged(oldDOM, newDOM)) {
     return oldDOM.$el.parentNode.replaceChild(createElement(newDOM), oldDOM.$el);
   }
 
-  // Step 2: Update the el
-  newDOM.$el = oldDOM.$el;
+  // Step 3: Check if both are text
+  if (oldDOM.type === 'text' && newDOM.type === 'text') {
+    return null;
+  }
 
-  // Step 3: Check if attributes need update
+  // Step 4: Check if attributes need update
   updateAttributes(oldDOM, newDOM);
 
-  // Step 4: Update children
-  updateChildren(oldDOM, newDOM);
+  // Step 5: Update children
+  return updateChildren(oldDOM, newDOM);
 }

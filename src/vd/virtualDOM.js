@@ -26,14 +26,24 @@ class VirtualNode {
     this.listeners = listeners;
 
     // Step 4: Add the children
-    this.children = children;
+    this.children = children.map((child) => {
+      if (typeof child === 'string') {
+        return {
+          type: 'text',
+          value: child,
+          attributes: {},
+          children: [],
+        };
+      }
+      return child;
+    });
 
     // Step 5: Add the children key order
     this.childrenKey = {};
     if (this.children && this.children.length > 0) {
-      this.children.forEach((child) => {
+      this.children.forEach((child, index) => {
         if (checkIfOwnProperty(child, 'key')) {
-          this.childrenKey[child.key] = child;
+          this.childrenKey[child.key] = { element: child, index };
         }
       });
     }
