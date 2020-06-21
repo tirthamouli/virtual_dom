@@ -36,7 +36,15 @@ class Root extends Component {
         className: 'container chain',
       },
       null, // listeners
-      createElement('input', { type: 'text', value: this.addInput }, { input: (event) => { this.changeAddInputHandler(event.target.value); } }),
+      createElement('input', { type: 'text', value: this.addInput }, {
+        input: (event) => this.changeAddInputHandler(event.target.value),
+        keydown: (e) => {
+          const code = (e.keyCode ? e.keyCode : e.which);
+          if (code === 13) {
+            this.addInputToListHander();
+          }
+        },
+      }),
       createElement('button', { type: 'button' }, { click: this.addInputToListHander.bind(this) }, 'Add to list'),
       ...this.fruits.map((fruit) => createElement('li', { key: fruit }, {
         click: () => { this.clickHandler(fruit); },

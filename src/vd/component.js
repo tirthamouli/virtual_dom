@@ -44,10 +44,7 @@ export class Component {
     // Step 5: Return the rendered object
     this._node = this.render;
 
-    // Step 6: Add keyed attributes
-    console.log(this);
-
-    // Step 7: Return the node
+    // Step 6: Return the node
     return this._node;
   }
 

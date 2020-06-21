@@ -13,7 +13,7 @@ function checkElementHasChanged(oldDOM, newDOM) {
   // Step 1: Check if either changed from or to string
   if (oldDOM.type === 'text' || newDOM.text === 'text') {
     // Check if text value is the same
-    if (oldDOM.type === 'text' && newDOM.text === 'text' && oldDOM.value === newDOM.value) {
+    if (oldDOM.type === 'text' && newDOM.type === 'text' && oldDOM.value === newDOM.value) {
       return false;
     }
     return true;
@@ -51,9 +51,9 @@ function removeAttributes(attributes, $el) {
 function addAttributes(attributes, $el) {
   Object.keys(attributes).forEach((key) => {
     if (key === 'className') {
-      $el.setAttribute('class', attributes[key]);
+      $el.class = attributes[key];
     } else if (key !== 'key') {
-      $el.setAttribute(key, attributes[key]);
+      $el[key] = attributes[key];
     }
   });
 }
