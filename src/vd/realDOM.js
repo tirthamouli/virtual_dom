@@ -167,9 +167,8 @@ function updateRemainingChildren(oldChildren, oldChildrenKey, newChildren, $el) 
       update(curOldChild, curNewChild);
       j += 1;
     } else if (checkIfOwnProperty(curNewChild, 'key') && checkIfOwnProperty(oldChildrenKey, curNewChild.key)) { // Step 3: Check if keyed
-      const $curChild = oldChildrenKey[curNewChild.key].element.$el;
       update(oldChildrenKey[curNewChild.key].element, curNewChild);
-      insertAtIndex($curChild, $el, i);
+      insertAtIndex(curNewChild.$el, $el, i);
     } else if (checkIfOwnProperty(curNewChild, 'key') && !checkIfOwnProperty(oldChildrenKey, curNewChild.key)) {
       const $newChild = createElement(curNewChild);
       insertAtIndex($newChild, $el, i);
