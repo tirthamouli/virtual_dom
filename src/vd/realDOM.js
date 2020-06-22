@@ -188,6 +188,7 @@ function updateRemainingChildren(oldChildren, oldChildrenKey, newChildren, $el) 
   // Remove remaining elements
   while (j < oldChildren.length) {
     $el.removeChild(oldChildren[i].$el);
+    j += 1;
   }
 }
 

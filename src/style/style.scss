@@ -16,7 +16,6 @@ body {
   padding: 30px;
 }
 
-
 .input-container {
   margin-top: 1rem;
   display: flex;
@@ -43,6 +42,12 @@ body {
 
 .input-container button:hover {
   background-color: #37a08e;
+}
+
+#no-fruit {
+  margin-top: 1.5rem;
+  border-top: 1px solid #999;
+  padding: 1rem;
 }
 
 #fruit-container {

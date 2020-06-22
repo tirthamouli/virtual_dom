@@ -32,6 +32,31 @@ export default class Root extends Component {
   }
 
   render() {
+    // Step 1: Fruits
+    let fruitNode = createElement(
+      'ul',
+      {
+        id: 'fruit-container',
+      },
+      null, // listeners
+      ...this.fruits.map(
+        (fruit) => createElement(ListItem,
+          {
+            key: fruit.id,
+            fruit: fruit.name,
+            removeFruit: () => {
+              this.clickHandler(fruit);
+            },
+          }),
+      ),
+    );
+
+    // Step 2: Check if empty
+    if (this.fruits.length === 0) {
+      fruitNode = createElement('p', { id: 'no-fruit' }, {}, 'No fruits left to eat. Buy more fruits...');
+    }
+
+    // Step 3: Render
     return createElement('div', { className: 'container' }, null,
       createElement('h1', null, null, 'Fruits'),
       createElement('p', null, null, 'Fruits that you will eat...'),
@@ -40,22 +65,6 @@ export default class Root extends Component {
         changeAddInputHandler: this.changeAddInputHandler.bind(this),
         addInputToListHander: this.addInputToListHander.bind(this),
       }),
-      createElement(
-        'ul',
-        {
-          id: 'fruit-container',
-        },
-        null, // listeners
-        ...this.fruits.map(
-          (fruit) => createElement(ListItem,
-            {
-              key: fruit.id,
-              fruit: fruit.name,
-              removeFruit: () => {
-                this.clickHandler(fruit);
-              },
-            }),
-        ),
-      ));
+      fruitNode);
   }
 }
