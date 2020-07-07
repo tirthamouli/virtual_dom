@@ -224,8 +224,10 @@ function updateChildren({ children: oldChildren, childrenKey: oldChildrenKey, $e
  */
 export function createElement(node) {
   // Check if we are rendering a component
+  let comp = null;
   if (isFunction(node)) {
-    node = new node();
+    comp = new node();
+    node = comp._node;
   }
 
   // Step 1: Check if we are supposed to create a
@@ -274,7 +276,12 @@ export function createElement(node) {
   // Step 8: Attach the el to the object
   node.$el = $el;
 
-  // Step 9: Return the dom
+  // Step 9: MOUNTED HOOK
+  if (comp && isFunction(comp.mounted)) {
+    comp.mounted($el);
+  }
+
+  // Step 10: Return the dom
   return $el;
 }
 

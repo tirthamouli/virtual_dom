@@ -17,6 +17,23 @@ export default class Root extends Component {
     };
   }
 
+  /**
+   * Created hook
+   * When observable is ready.
+   * Data, computed and watch is ready
+   */
+  created() {
+    console.log('ROOT | CREATED', this.fruits);
+  }
+
+  /**
+   * Mounted
+   * When component is added to the real dom
+   */
+  mounted($el) {
+    console.log('ROOT | MOUNTED', $el);
+  }
+
   clickHandler(fruit) {
     this.fruits = this.fruits.filter((curFruit) => curFruit !== fruit);
   }

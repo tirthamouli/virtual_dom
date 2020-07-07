@@ -57,9 +57,13 @@ class VirtualNode {
  * @param {Array} children
  */
 export function createElement(type, attributes, listeners, ...children) {
+  // Check if node or component
   if (typeof type === 'string') {
     return new VirtualNode(type,
       attributes === null ? {} : attributes, listeners, children);
   }
-  return new type(attributes);
+
+  // If component, instantiate it
+  const { _node: node } = new type(attributes);
+  return node;
 }

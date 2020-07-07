@@ -42,14 +42,16 @@ export class Component {
     // Step 5: Create the observable
     Observable.call(this, { data, computed, watch });
 
-    // Step 6: Return the rendered object
+    // Step 6: Setting the node
     this._node = this.render;
     if (this.props && checkIfOwnProperty(this.props, 'key')) {
       this._node.key = this.props.key;
     }
 
-    // Step 7: Return the node
-    return this._node;
+    // Step 7: CREATED HOOK
+    if (isFunction(this.created)) {
+      this.created();
+    }
   }
 
   /**
