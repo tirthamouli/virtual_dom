@@ -326,7 +326,7 @@ export function render(root, node) {
 export function update(oldDOM, newDOM) {
   // Step 1: Check if the element itself has changed
   if (checkElementHasChanged(oldDOM, newDOM)) {
-    return oldNode.$el.parentNode.replaceChild(createElement(newNode), oldNode.$el);
+    return oldDOM.$el.parentNode.replaceChild(createElement(newDOM), oldDOM.$el);
   }
 
   // Step 2: Set up the node if required
