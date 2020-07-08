@@ -8,6 +8,11 @@ It uses a home-made virtual DOM implementation for creating and updating the rea
 2. Nest components
 3. Share properties and methods from parent component to child components.
 4. Set up two way data binding
+5. Hooks
+  a. created - when the virtual dom is created
+  b. mounted - when the virtual dom is actually added to the real dom
+  c. shouldComponentUpdate - to prevent virtualDOM re-computation and improving performance. Will only prevent virtualDOM re-computation when parent is changed. When current data is changed, re-computation is not prevented
+  d. updated - When the real dom is updated
 
 # Documentation 
 

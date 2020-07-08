@@ -47,11 +47,6 @@ export class Component {
     if (this.props && checkIfOwnProperty(this.props, 'key')) {
       this._node.key = this.props.key;
     }
-
-    // Step 7: CREATED HOOK
-    if (isFunction(this.created)) {
-      this.created();
-    }
   }
 
   /**

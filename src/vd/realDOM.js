@@ -11,7 +11,7 @@ import { isFunction, checkIfOwnProperty } from '../helpers/helpers';
  */
 function checkElementHasChanged(oldDOM, newDOM) {
   // Step 1: Check if either changed from or to string
-  if (oldDOM.type === 'text' || newDOM.text === 'text') {
+  if (oldDOM.type === 'text' || newDOM.type === 'text') {
     // Check if text value is the same
     if (oldDOM.type === 'text' && newDOM.type === 'text' && oldDOM.value === newDOM.value) {
       return false;
@@ -107,7 +107,9 @@ function addAllChildren(children, $el) {
     }
 
     // Create the child
-    $el.appendChild(createElement(child));
+    if (child) {
+      $el.appendChild(createElement(child));
+    }
   });
 }
 
@@ -225,8 +227,21 @@ function updateChildren({ children: oldChildren, childrenKey: oldChildrenKey, $e
 export function createElement(node) {
   // Check if we are rendering a component
   let comp = null;
-  if (isFunction(node)) {
-    comp = new node();
+  let realNode = null;
+
+  if (typeof node.type !== 'string' && isFunction(node.type)) {
+    // Instantiate the component
+    comp = new node.type(node.attributes || {});
+
+    // CREATED HOOK
+    if (isFunction(comp.created)) {
+      comp.created();
+    }
+
+    // Set the real node
+    realNode = node;
+
+    // Set the reference to the node
     node = comp._node;
   }
 
@@ -275,6 +290,11 @@ export function createElement(node) {
 
   // Step 8: Attach the el to the object
   node.$el = $el;
+  node._comp = comp;
+  if (realNode) {
+    realNode.$el = $el;
+    realNode._node = node;
+  }
 
   // Step 9: MOUNTED HOOK
   if (comp && isFunction(comp.mounted)) {
@@ -304,22 +324,65 @@ export function render(root, node) {
  * @param {Object} newDOM
  */
 export function update(oldDOM, newDOM) {
-  // Step 1: Update the el
-  newDOM.$el = oldDOM.$el;
-
-  // Step 2: Check if the element itself has changed
+  // Step 1: Check if the element itself has changed
   if (checkElementHasChanged(oldDOM, newDOM)) {
-    return oldDOM.$el.parentNode.replaceChild(createElement(newDOM), oldDOM.$el);
+    return oldNode.$el.parentNode.replaceChild(createElement(newNode), oldNode.$el);
   }
 
-  // Step 3: Check if both are text
-  if (oldDOM.type === 'text' && newDOM.type === 'text') {
+  // Step 2: Set up the node if required
+  let oldNode = oldDOM;
+  let newNode = newDOM;
+  if (oldDOM._node) {
+    // Set up the old node
+    oldNode = oldDOM._node;
+
+    // SHOULD COMPONENT UPDATE HOOK:
+    let shouldComponentUpdate = true;
+    if (isFunction(oldNode._comp.shouldComponentUpdate)) {
+      shouldComponentUpdate = oldNode._comp.shouldComponentUpdate(oldDOM.attributes,
+        newDOM.attributes);
+    }
+
+    // Check if update is required
+    if (shouldComponentUpdate) {
+      // Step A: Create a new node
+      const comp = new newDOM.type(newDOM.attributes);
+
+      // Step B: Storing reference for newNode
+      newNode = comp._node;
+      newNode._comp = comp;
+      newNode.$el = oldNode.$el;
+
+      // Step C: Storing references for newDOM
+      newDOM._node = newNode;
+      newDOM.$el = oldDOM.$el;
+    } else {
+      // Update the comp and el
+      newDOM._node = oldDOM._node;
+      newDOM.$el = oldDOM.$el;
+      return null;
+    }
+  } else {
+    // Update the comp and el
+    newDOM.$el = oldDOM.$el;
+    newNode.$el = oldNode.$el;
+    newNode._comp = oldNode._comp;
+  }
+
+  // Step 4: Check if both are text
+  if (oldNode.type === 'text' && newNode.type === 'text') {
     return null;
   }
 
-  // Step 4: Check if attributes need update
-  updateAttributes(oldDOM, newDOM);
+  // Step 5: Check if attributes need update
+  updateAttributes(oldNode, newNode);
 
-  // Step 5: Update children
-  return updateChildren(oldDOM, newDOM);
+  // Step 6: Update children
+  updateChildren(oldNode, newNode);
+
+  // Step 7: UPDATED HOOK
+  if (newNode._comp && isFunction(newNode._comp.updated)) {
+    newNode._comp.updated();
+  }
+  return null;
 }

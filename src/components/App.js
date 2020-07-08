@@ -34,6 +34,13 @@ export default class Root extends Component {
     console.log('ROOT | MOUNTED', $el);
   }
 
+  /**
+   * Updated hook
+   */
+  updated() {
+    console.log('ROOT | UPDATED', this.fruits);
+  }
+
   clickHandler(fruit) {
     this.fruits = this.fruits.filter((curFruit) => curFruit !== fruit);
   }

@@ -42,7 +42,7 @@ class VirtualNode {
     this.childrenKey = {};
     if (this.children && this.children.length > 0) {
       this.children.forEach((child, index) => {
-        if (checkIfOwnProperty(child, 'key')) {
+        if (child && checkIfOwnProperty(child, 'key')) {
           this.childrenKey[child.key] = { element: child, index };
         }
       });
@@ -57,13 +57,6 @@ class VirtualNode {
  * @param {Array} children
  */
 export function createElement(type, attributes, listeners, ...children) {
-  // Check if node or component
-  if (typeof type === 'string') {
-    return new VirtualNode(type,
-      attributes === null ? {} : attributes, listeners, children);
-  }
-
-  // If component, instantiate it
-  const { _node: node } = new type(attributes);
-  return node;
+  return new VirtualNode(type,
+    attributes === null ? {} : attributes, listeners || {}, children);
 }
